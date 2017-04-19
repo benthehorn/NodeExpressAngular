@@ -2,6 +2,11 @@
 
 angular.module('myApp',[
     'ngRoute',
+    'ngAnimate',
+    'angular-jwt',
+    'ui.bootstrap',
+    'myApp.signup',
+    'myApp.security',
     'myApp.controllers',
     'myApp.directives',
     'myApp.services',
@@ -12,4 +17,7 @@ angular.module('myApp',[
 ]).
 config(['$routeProvider', function($routeProvider) {
     $routeProvider.otherwise({redirectTo: '/view1'});
-}]);
+}]).
+config(function ($httpProvider) {
+    $httpProvider.interceptors.push('AuthInterceptor');
+});

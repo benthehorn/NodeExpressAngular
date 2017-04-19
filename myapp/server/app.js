@@ -5,6 +5,17 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var passport = require('passport');
+var passportConfig = require('./config/passport');
+passportConfig(passport);
+
+var mongoose = require('mongoose');
+var config = require('./config/database');
+var db = require('./config/db');
+//var helmet = require('helmet');
+
+var jwt = require('jwt-simple');
+
 var index = require('./routes/index');
 var users = require('./routes/users');
 
@@ -25,12 +36,24 @@ app.use(express.static(path.join(__dirname, 'public')));
 // for serving the angular application statically
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.static(path.join(__dirname, '../public/app')));
+app.use(passport.initialize());
 
-app.use('/api/users', users);
+
+app.use('/users', users);
 
 app.get('/*', function (req, res) {
 res.sendFile(path.join(__dirname, '/../public/index.html'))
 });
+
+app.use('/api', function(req, res, next){
+  passport.authenticate('jwt', {session: false}, function(err, user, info){
+
+    if(err) {res.status(403).json({message: "Token could not be authenticated " , fullError: err })};
+    if(user){return next();}
+    return res.status(403).json({message: "Token could not be authenticated ", fullError: info});
+  })(req, res, next);
+});
+//app.use('/api', restApi);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
